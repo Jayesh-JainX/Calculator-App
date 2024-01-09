@@ -60,7 +60,7 @@ function reducer(state, { type, payload }) {
         return state;
       }
 
-      if (payload.digit === "." && state.currentOperand.includes(".")) {
+      if (payload.digit === "." && state.currentOperand === ".") {
         return state;
       }
 
