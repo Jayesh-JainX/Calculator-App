@@ -60,3 +60,14 @@ body{
     color: white;
     font-size: 2.5rem;
 }
+
+@media screen and (max-width: 390px) {
+    .calculator-grid {
+        grid-template-columns: repeat(4, 5rem);
+        grid-template-rows: minmax(7rem, auto) repeat(5, 5rem);
+    }
+    
+    .calculator-grid > button {
+        font-size: 1.5rem;
+    }
+}
