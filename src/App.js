@@ -1,14 +1,16 @@
 import { useReducer } from "react";
+import { useEffect } from "react";
 import "./styles.css";
 import DigitButton from "./DigitButton";
 import OperationButton from "./OperationButton";
 
 export const ACTIONS = {
-  ADD_DiGIT: "add-digit",
+  ADD_DIGIT: "add-digit",
   CHOOSE_OPERATION: "choose-operation",
   CLEAR: "clear",
   DELETE_DIGIT: "delete-digit",
   EVALUATE: "evaluate",
+  FREE: "free",
 };
 
 function evaluate({ currentOperand, previousOperand, operation }) {
@@ -22,14 +24,16 @@ function evaluate({ currentOperand, previousOperand, operation }) {
     case "+":
       comp = prev + curr;
       break;
-    case "-":
+    case "−":
       comp = prev - curr;
       break;
-    case "*":
+    case "x":
       comp = prev * curr;
       break;
     case "÷":
       comp = prev / curr;
+      break;
+    default:
       break;
   }
   return comp.toString();
@@ -123,7 +127,16 @@ function reducer(state, { type, payload }) {
       if (state.overwrite) {
         return {
           ...state,
-          currentOperand: null,
+          currentOperand: state.currentOperand.slice(0, -1),
+          overwrite: false,
+        };
+      }
+      if (state.currentOperand == null && state.previousOperand != null) {
+        return {
+          ...state,
+          currentOperand: state.previousOperand,
+          previousOperand: null,
+          operation: null,
         };
       }
       if (state.currentOperand == null) {
@@ -139,6 +152,9 @@ function reducer(state, { type, payload }) {
         ...state,
         currentOperand: state.currentOperand.slice(0, -1),
       };
+
+    default:
+      break;
   }
 }
 
@@ -147,6 +163,50 @@ function App() {
     reducer,
     {}
   );
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      console.log("Key pressed:", event.key);
+
+      const key = event.key;
+      const code = event.code;
+
+      if (/[0-9]/.test(key)) {
+        dispatch({ type: ACTIONS.ADD_DIGIT, payload: { digit: key } });
+      } else if (key === "+" || key === "-" || key === "*" || key === "/") {
+        if (key === "*") {
+          dispatch({
+            type: ACTIONS.CHOOSE_OPERATION,
+            payload: { operation: "x" },
+          });
+        } else if (key === "/") {
+          dispatch({
+            type: ACTIONS.CHOOSE_OPERATION,
+            payload: { operation: "÷" },
+          });
+        } else {
+          dispatch({
+            type: ACTIONS.CHOOSE_OPERATION,
+            payload: { operation: key },
+          });
+        }
+      } else if (code === "Enter" || key === "Enter") {
+        dispatch({ type: ACTIONS.EVALUATE });
+      } else if (key === "Escape") {
+        dispatch({ type: ACTIONS.CLEAR });
+      } else if (key === "Backspace") {
+        dispatch({ type: ACTIONS.DELETE_DIGIT });
+      } else if (key === ".") {
+        dispatch({ type: ACTIONS.ADD_DIGIT, payload: { digit: key } });
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [dispatch]);
 
   return (
     <div className="calculator-container">
@@ -173,7 +233,7 @@ function App() {
         <DigitButton digit="1" dispatch={dispatch} />
         <DigitButton digit="2" dispatch={dispatch} />
         <DigitButton digit="3" dispatch={dispatch} />
-        <OperationButton operation="*" dispatch={dispatch} />
+        <OperationButton operation="x" dispatch={dispatch} />
         <DigitButton digit="4" dispatch={dispatch} />
         <DigitButton digit="5" dispatch={dispatch} />
         <DigitButton digit="6" dispatch={dispatch} />
@@ -181,7 +241,7 @@ function App() {
         <DigitButton digit="7" dispatch={dispatch} />
         <DigitButton digit="8" dispatch={dispatch} />
         <DigitButton digit="9" dispatch={dispatch} />
-        <OperationButton operation="-" dispatch={dispatch} />
+        <OperationButton operation="−" dispatch={dispatch} />
         <DigitButton digit="." dispatch={dispatch} />
         <DigitButton digit="0" dispatch={dispatch} />
         <button
