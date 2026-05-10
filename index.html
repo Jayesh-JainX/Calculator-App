@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"
+    />
+    <meta name="theme-color" content="#ee7752" />
+    <meta
+      name="description"
+      content="A beautifully designed, fast, and responsive Online Calculator. Perform all your mathematical calculations easily on mobile or desktop."
+    />
+    <meta
+      name="keywords"
+      content="calculator, online calculator, free calculator, mathematical calculations, responsive calculator, pwa calculator, vercel, fast math tool, simple calculator"
+    />
+    <meta name="author" content="Jayesh Jain" />
+    <meta name="robots" content="index, follow" />
+
+    <meta property="og:title" content="Modern Online Calculator" />
+    <meta
+      property="og:description"
+      content="Calculate on the go with this lightning-fast, premium Glassmorphism calculator App."
+    />
+    <meta
+      property="og:image"
+      content="https://on-line-calculator.vercel.app/og-image.jpg"
+    />
+    <meta property="og:url" content="https://on-line-calculator.vercel.app/" />
+    <meta property="og:site_name" content="Calculator App" />
+    <meta property="og:type" content="website" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Modern Online Calculator" />
+    <meta
+      name="twitter:description"
+      content="Calculate on the go with this lightning-fast, premium Glassmorphism calculator App."
+    />
+    <meta
+      name="twitter:image"
+      content="https://on-line-calculator.vercel.app/og-image.jpg"
+    />
+    <meta name="twitter:creator" content="@Jayeshj32149392" />
+
+    <link rel="canonical" href="https://on-line-calculator.vercel.app/" />
+
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/logo.png" />
+
+    <title>Modern Online Calculator</title>
+
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("/sw.js")
+            .then((registration) => {
+              console.log("SW registered: ", registration);
+            })
+            .catch((registrationError) => {
+              console.log("SW registration failed: ", registrationError);
+            });
+        });
+      }
+    </script>
+  </head>
+
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <script type="module" src="/src/index.jsx"></script>
+  </body>
+</html>

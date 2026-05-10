@@ -1,13 +1,14 @@
 import { useReducer } from "react";
 import { useEffect } from "react";
 import "./styles.css";
-import DigitButton from "./DigitButton";
-import OperationButton from "./OperationButton";
+import DigitButton from "./DigitButton.jsx";
+import OperationButton from "./OperationButton.jsx";
 
 export const ACTIONS = {
   ADD_DIGIT: "add-digit",
   CHOOSE_OPERATION: "choose-operation",
   CLEAR: "clear",
+  CLEAR_HISTORY: "clear-history",
   DELETE_DIGIT: "delete-digit",
   EVALUATE: "evaluate",
   FREE: "free",
@@ -78,7 +79,10 @@ function reducer(state, { type, payload }) {
       };
 
     case ACTIONS.CLEAR:
-      return {};
+      return { history: state.history || [] };
+
+    case ACTIONS.CLEAR_HISTORY:
+      return { ...state, history: [] };
 
     case ACTIONS.CHOOSE_OPERATION:
       if (state.currentOperand == null && state.previousOperand == null) {
@@ -99,9 +103,18 @@ function reducer(state, { type, payload }) {
         };
       }
 
+      const evalResultOp = evaluate(state);
       return {
         ...state,
-        previousOperand: evaluate(state),
+        history: [
+          ...(state.history || []),
+          `${formatOperand(state.previousOperand)} ${
+            state.operation
+          } ${formatOperand(state.currentOperand)} = ${formatOperand(
+            evalResultOp
+          )}`,
+        ],
+        previousOperand: evalResultOp,
         operation: payload.operation,
         currentOperand: null,
       };
@@ -115,12 +128,21 @@ function reducer(state, { type, payload }) {
         return state;
       }
 
+      const evalResult = evaluate(state);
       return {
         ...state,
+        history: [
+          ...(state.history || []),
+          `${formatOperand(state.previousOperand)} ${
+            state.operation
+          } ${formatOperand(state.currentOperand)} = ${formatOperand(
+            evalResult
+          )}`,
+        ],
         overwrite: true,
         previousOperand: null,
         operation: null,
-        currentOperand: evaluate(state),
+        currentOperand: evalResult,
       };
 
     case ACTIONS.DELETE_DIGIT:
@@ -159,15 +181,11 @@ function reducer(state, { type, payload }) {
 }
 
 function App() {
-  const [{ currentOperand, previousOperand, operation }, dispatch] = useReducer(
-    reducer,
-    {}
-  );
+  const [{ currentOperand, previousOperand, operation, history }, dispatch] =
+    useReducer(reducer, { history: [] });
 
   useEffect(() => {
     const handleKeyDown = (event) => {
-      console.log("Key pressed:", event.key);
-
       const key = event.key;
       const code = event.code;
 
@@ -209,47 +227,73 @@ function App() {
   }, [dispatch]);
 
   return (
-    <div className="calculator-container">
-      <div className="calculator-grid">
-        <div className="output">
-          <div className="previous-operand">
-            {formatOperand(previousOperand)} {operation}
+    <div className="app-layout">
+      <div className="calculator-container">
+        <div className="calculator-grid">
+          <div className="output">
+            <div className="previous-operand">
+              {formatOperand(previousOperand)} {operation}
+            </div>
+            <div className="current-operand">
+              {" "}
+              {formatOperand(currentOperand)}{" "}
+            </div>
           </div>
-          <div className="current-operand">
-            {" "}
-            {formatOperand(currentOperand)}{" "}
-          </div>
+          <button
+            className="span-two operation-button"
+            onClick={() => dispatch({ type: ACTIONS.CLEAR })}
+          >
+            AC
+          </button>
+          <button
+            className="operation-button"
+            onClick={() => dispatch({ type: ACTIONS.DELETE_DIGIT })}
+          >
+            DEL
+          </button>
+          <OperationButton operation="÷" dispatch={dispatch} />
+          <DigitButton digit="1" dispatch={dispatch} />
+          <DigitButton digit="2" dispatch={dispatch} />
+          <DigitButton digit="3" dispatch={dispatch} />
+          <OperationButton operation="x" dispatch={dispatch} />
+          <DigitButton digit="4" dispatch={dispatch} />
+          <DigitButton digit="5" dispatch={dispatch} />
+          <DigitButton digit="6" dispatch={dispatch} />
+          <OperationButton operation="+" dispatch={dispatch} />
+          <DigitButton digit="7" dispatch={dispatch} />
+          <DigitButton digit="8" dispatch={dispatch} />
+          <DigitButton digit="9" dispatch={dispatch} />
+          <OperationButton operation="−" dispatch={dispatch} />
+          <DigitButton digit="." dispatch={dispatch} />
+          <DigitButton digit="0" dispatch={dispatch} />
+          <button
+            className="span-two evaluate-button"
+            onClick={() => dispatch({ type: ACTIONS.EVALUATE })}
+          >
+            =
+          </button>
         </div>
-        <button
-          className="span-two"
-          onClick={() => dispatch({ type: ACTIONS.CLEAR })}
-        >
-          AC
-        </button>
-        <button onClick={() => dispatch({ type: ACTIONS.DELETE_DIGIT })}>
-          DEL
-        </button>
-        <OperationButton operation="÷" dispatch={dispatch} />
-        <DigitButton digit="1" dispatch={dispatch} />
-        <DigitButton digit="2" dispatch={dispatch} />
-        <DigitButton digit="3" dispatch={dispatch} />
-        <OperationButton operation="x" dispatch={dispatch} />
-        <DigitButton digit="4" dispatch={dispatch} />
-        <DigitButton digit="5" dispatch={dispatch} />
-        <DigitButton digit="6" dispatch={dispatch} />
-        <OperationButton operation="+" dispatch={dispatch} />
-        <DigitButton digit="7" dispatch={dispatch} />
-        <DigitButton digit="8" dispatch={dispatch} />
-        <DigitButton digit="9" dispatch={dispatch} />
-        <OperationButton operation="−" dispatch={dispatch} />
-        <DigitButton digit="." dispatch={dispatch} />
-        <DigitButton digit="0" dispatch={dispatch} />
-        <button
-          className="span-two"
-          onClick={() => dispatch({ type: ACTIONS.EVALUATE })}
-        >
-          =
-        </button>
+      </div>
+
+      <div className="history-panel">
+        <div className="history-header">
+          <h2>History</h2>
+          {history && history.length > 0 && (
+            <button
+              className="clear-history-btn"
+              onClick={() => dispatch({ type: ACTIONS.CLEAR_HISTORY })}
+            >
+              Clear
+            </button>
+          )}
+        </div>
+        <ul className="history-list">
+          {history && history.length > 0 ? (
+            history.map((entry, index) => <li key={index}>{entry}</li>)
+          ) : (
+            <li className="no-history">No calculations yet</li>
+          )}
+        </ul>
       </div>
     </div>
   );
